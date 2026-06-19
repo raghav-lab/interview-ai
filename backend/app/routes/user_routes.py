@@ -1,3 +1,7 @@
+from app.security.auth import get_current_user
+from app.schemas.login_schema import LoginRequest
+from app.security.jwt_handler import create_access_token
+from app.security.hash import verify_password
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -33,4 +37,47 @@ def register_user(
     return {
         "message": "User registered successfully",
         "user_id": new_user.id
+    }
+@router.post("/login")
+def login_user(
+    login_data: LoginRequest,
+    db: Session = Depends(get_db)
+):
+
+    user = db.query(User).filter(
+        User.email == login_data.email
+    ).first()
+
+    if not user:
+        return {
+            "message": "Invalid email or password"
+        }
+
+    if not verify_password(
+        login_data.password,
+        user.password_hash
+    ):
+        return {
+            "message": "Invalid email or password"
+        }
+
+    token = create_access_token(
+        {
+            "user_id": user.id,
+            "email": user.email
+        }
+    )
+
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }
+@router.get("/profile")
+def get_profile(
+    current_user=Depends(get_current_user)
+):
+
+    return {
+        "message": "Protected route working",
+        "user": current_user
     }
