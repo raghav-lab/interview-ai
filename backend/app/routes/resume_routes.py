@@ -1,3 +1,8 @@
+from sqlalchemy.orm import Session
+from fastapi import Depends
+
+from app.database.connection import get_db
+from app.database.resume_model import Resume
 from fastapi import APIRouter, UploadFile, File
 import shutil
 import os
@@ -14,7 +19,8 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/upload-resume")
 async def upload_resume(
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
 ):
 
     file_path = os.path.join(
@@ -39,9 +45,21 @@ async def upload_resume(
 
     skills = extract_skills(text)
 
+    resume = Resume(
+    filename=file.filename,
+    resume_text=text,
+    extracted_skills=",".join(skills),
+    user_id=1
+    )
+
+    db.add(resume)
+    db.commit()
+    db.refresh(resume)
+
     return {
-        "message": "Resume uploaded successfully",
-        "filename": file.filename,
-        "skills": skills,
-        "preview": text[:500]
+    "message": "Resume uploaded successfully",
+    "resume_id": resume.id,
+    "filename": file.filename,
+    "skills": skills,
+    "preview": text[:500]
     }

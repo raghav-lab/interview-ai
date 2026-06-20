@@ -1,4 +1,6 @@
+from app.routes.ai_routes import router as ai_router
 from fastapi import FastAPI
+from app.database.resume_model import Resume
 
 from app.database.connection import engine
 from app.database.models import Base
@@ -10,6 +12,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+app.include_router(ai_router)
 app.include_router(user_router)
 app.include_router(resume_router)
 
