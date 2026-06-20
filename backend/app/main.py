@@ -4,12 +4,14 @@ from app.database.connection import engine
 from app.database.models import Base
 
 from app.routes.user_routes import router as user_router
+from app.routes.resume_routes import router as resume_router
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 app.include_router(user_router)
+app.include_router(resume_router)
 
 @app.get("/")
 def home():
