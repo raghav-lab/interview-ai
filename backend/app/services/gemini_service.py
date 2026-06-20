@@ -1,3 +1,4 @@
+import json
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
@@ -18,24 +19,35 @@ def generate_interview_questions(
 ):
 
     prompt = f"""
-You are a senior software engineer interviewer.
+Analyze this resume and return ONLY valid JSON.
 
-Analyze the resume below.
+Format:
+
+{{
+  "candidate_role": "role name",
+  "technical_questions": [],
+  "project_questions": [],
+  "hr_questions": []
+}}
 
 Generate:
-
-1. Candidate Role
-2. 10 Technical Questions
-3. 5 Project Questions
-4. 3 HR Questions
+- 10 technical questions
+- 5 project questions
+- 3 hr questions
 
 Resume:
 
 {resume_text}
+
+Return JSON only.
 """
 
-    response = model.generate_content(
-        prompt
-    )
+    response = model.generate_content(prompt)
 
-    return response.text
+    text = response.text
+
+    text = text.replace("```json", "")
+    text = text.replace("```", "")
+    text = text.strip()
+
+    return json.loads(text)
