@@ -1,3 +1,4 @@
+from app.routes.interview_routes import router as interview_router
 from app.routes.ai_routes import router as ai_router
 from fastapi import FastAPI
 from app.database.resume_model import Resume
@@ -15,6 +16,7 @@ app = FastAPI()
 app.include_router(ai_router)
 app.include_router(user_router)
 app.include_router(resume_router)
+app.include_router(interview_router)
 
 @app.get("/")
 def home():
