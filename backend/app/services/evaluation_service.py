@@ -1,4 +1,7 @@
+import json
+
 from app.services.gemini_service import model
+
 
 def evaluate_answer(question: str, answer: str):
 
@@ -11,17 +14,34 @@ Question:
 Candidate Answer:
 {answer}
 
-Evaluate the answer.
+Return ONLY valid JSON.
 
-Return:
-1. Score out of 10
-2. Strengths
-3. Weaknesses
-4. Improved Answer
+Format:
 
-Keep the response structured.
+{{
+  "score": 0,
+  "strengths": [],
+  "weaknesses": [],
+  "improved_answer": ""
+}}
+
+Rules:
+- score must be between 0 and 10
+- strengths should be a list
+- weaknesses should be a list
+- improved_answer should be a better version of the answer
+
+Return JSON only.
 """
 
-    response = model.generate_content(prompt)
+    response = model.generate_content(
+        prompt
+    )
 
-    return response.text
+    text = response.text
+
+    text = text.replace("```json", "")
+    text = text.replace("```", "")
+    text = text.strip()
+
+    return json.loads(text)

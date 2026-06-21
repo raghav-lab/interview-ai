@@ -16,10 +16,29 @@ from app.routes.interview_session_routes import (
 from app.routes.answer_routes import (
     router as answer_router
 )
+from app.routes.results_routes import (
+    router as results_router
+)
+from app.routes.jd_routes import router as jd_router
+from fastapi.middleware.cors import CORSMiddleware
+from app.routes.history_routes import (
+    router as history_router
+)
+from app.routes.analysis_routes import (
+    router as analysis_router
+)
+from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(ai_router)
 app.include_router(user_router)
@@ -27,6 +46,10 @@ app.include_router(resume_router)
 app.include_router(interview_router)
 app.include_router(interview_session_router)
 app.include_router(answer_router)
+app.include_router(results_router)
+app.include_router(jd_router)
+app.include_router(history_router)
+app.include_router(analysis_router)
 
 @app.get("/")
 def home():

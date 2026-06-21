@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+import json
 
 from app.database.connection import get_db
 from app.database.interview_question_model import InterviewQuestion
@@ -36,11 +37,17 @@ def submit_answer(
     )
 
     question_record.answer = request.answer
-    question_record.feedback = evaluation
+
+    question_record.score = evaluation["score"]
+
+    question_record.feedback = json.dumps(
+        evaluation
+    )
 
     db.commit()
 
     return {
         "message": "Answer evaluated",
+        "score": evaluation["score"],
         "evaluation": evaluation
     }
