@@ -14,9 +14,12 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
 
-    token = credentials.credentials
+    print("Credentials received:", credentials)
 
     try:
+        token = credentials.credentials
+
+        print("Token:", token)
 
         payload = jwt.decode(
             token,
@@ -24,9 +27,13 @@ def get_current_user(
             algorithms=[ALGORITHM]
         )
 
+        print("Decoded payload:", payload)
+
         return payload
 
-    except JWTError:
+    except JWTError as e:
+
+        print("JWT ERROR:", e)
 
         raise HTTPException(
             status_code=401,

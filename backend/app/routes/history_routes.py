@@ -5,16 +5,22 @@ from app.database.connection import get_db
 from app.database.interview_model import Interview
 from app.database.interview_question_model import InterviewQuestion
 
+from app.security.auth import get_current_user
+
 router = APIRouter()
 
 
 @router.get("/interviews")
 def get_interviews(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
 
     interviews = db.query(
         Interview
+    ).filter(
+        Interview.user_id ==
+        current_user["user_id"]
     ).all()
 
     results = []

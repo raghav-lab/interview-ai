@@ -9,9 +9,7 @@ genai.configure(
     api_key=os.getenv("GEMINI_API_KEY")
 )
 
-model = genai.GenerativeModel(
-    "gemini-2.5-flash"
-)
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 
 def generate_interview_questions(
@@ -42,12 +40,50 @@ Resume:
 Return JSON only.
 """
 
-    response = model.generate_content(prompt)
+    try:
+        response = model.generate_content(prompt)
 
-    text = response.text
+        text = response.text
 
-    text = text.replace("```json", "")
-    text = text.replace("```", "")
-    text = text.strip()
+        text = text.replace("```json", "")
+        text = text.replace("```", "")
+        text = text.strip()
 
-    return json.loads(text)
+        return json.loads(text)
+
+    except Exception as e:
+
+        print("GEMINI ERROR:", e)
+
+        return {
+            "candidate_role": "Software Engineer",
+
+            "technical_questions": [
+                "Explain the four pillars of OOP.",
+                "What is React useEffect?",
+                "Explain REST APIs.",
+                "What is normalization in DBMS?",
+                "Explain OSI model.",
+                "Explain multithreading in Java.",
+                "What is JWT authentication?",
+                "Explain indexing in databases.",
+                "What is Docker?",
+                "Difference between SQL and NoSQL."
+            ],
+
+            "project_questions": [
+                "Explain your major project.",
+                "What challenges did you face?",
+                "How did you optimize performance?",
+                "How did you design the database?",
+                "What would you improve in the future?"
+            ],
+
+            "hr_questions": [
+                "Tell me about yourself.",
+                "Why should we hire you?",
+                "Where do you see yourself in 5 years?"
+            ]
+        }
+
+   

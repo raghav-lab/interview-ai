@@ -4,6 +4,9 @@ from fastapi import Depends
 from app.database.connection import get_db
 from app.database.resume_model import Resume
 from fastapi import APIRouter, UploadFile, File
+
+from app.security.auth import get_current_user
+
 import shutil
 import os
 import fitz
@@ -20,7 +23,8 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 @router.post("/upload-resume")
 async def upload_resume(
     file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
 
     file_path = os.path.join(
@@ -46,10 +50,10 @@ async def upload_resume(
     skills = extract_skills(text)
 
     resume = Resume(
-    filename=file.filename,
-    resume_text=text,
-    extracted_skills=",".join(skills),
-    user_id=1
+        filename=file.filename,
+        resume_text=text,
+        extracted_skills=",".join(skills),
+        user_id=current_user["user_id"]
     )
 
     db.add(resume)
@@ -57,9 +61,45 @@ async def upload_resume(
     db.refresh(resume)
 
     return {
-    "message": "Resume uploaded successfully",
-    "resume_id": resume.id,
-    "filename": file.filename,
-    "skills": skills,
-    "preview": text[:500]
+        "message": "Resume uploaded successfully",
+        "resume_id": resume.id,
+        "filename": file.filename,
+        "skills": skills,
+        "preview": text[:500]
     }
+@router.get("/resumes")
+def get_resumes(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    resumes = db.query(Resume).filter(
+        Resume.user_id == current_user["user_id"]
+    ).all()
+
+    return [
+        {
+            "id": resume.id,
+            "filename": resume.filename,
+            "skills": resume.extracted_skills
+        }
+        for resume in resumes
+    ]
+@router.get("/resumes")
+def get_resumes(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    resumes = db.query(Resume).filter(
+        Resume.user_id == current_user["user_id"]
+    ).all()
+
+    return [
+        {
+            "id": resume.id,
+            "filename": resume.filename,
+            "skills": resume.extracted_skills
+        }
+        for resume in resumes
+    ]

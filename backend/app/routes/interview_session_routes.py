@@ -6,6 +6,8 @@ from app.database.resume_model import Resume
 from app.database.interview_model import Interview
 from app.database.interview_question_model import InterviewQuestion
 
+from app.security.auth import get_current_user
+
 from app.services.gemini_service import (
     generate_interview_questions
 )
@@ -16,7 +18,8 @@ router = APIRouter()
 @router.post("/start-interview/{resume_id}")
 def start_interview(
     resume_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
 
     resume = db.query(
@@ -30,12 +33,20 @@ def start_interview(
             "message": "Resume not found"
         }
 
-    questions = generate_interview_questions(
-        resume.resume_text
-    )
+    try:
+        questions = generate_interview_questions(
+            resume.resume_text
+        )
 
+        print("QUESTIONS:")
+        print(questions)
+
+    except Exception as e:
+        print("START INTERVIEW ERROR:")
+        print(e)
+        raise e
     interview = Interview(
-        user_id=1,
+        user_id=current_user["user_id"],
         resume_id=resume_id
     )
 

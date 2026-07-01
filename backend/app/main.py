@@ -28,6 +28,10 @@ from app.routes.analysis_routes import (
     router as analysis_router
 )
 from fastapi.middleware.cors import CORSMiddleware
+from app.routes.question_routes import (
+    router as question_router
+)
+from app.routes.resume_analysis_routes import router as resume_analysis_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -50,6 +54,8 @@ app.include_router(results_router)
 app.include_router(jd_router)
 app.include_router(history_router)
 app.include_router(analysis_router)
+app.include_router(question_router)
+app.include_router(resume_analysis_router)
 
 @app.get("/")
 def home():

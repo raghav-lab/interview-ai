@@ -1,6 +1,7 @@
+import json
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-import json
 
 from app.database.connection import get_db
 from app.database.interview_question_model import InterviewQuestion
@@ -36,18 +37,44 @@ def submit_answer(
         request.answer
     )
 
-    question_record.answer = request.answer
+    print("EVALUATION:", evaluation)
 
-    question_record.score = evaluation["score"]
+    try:
+        question_record.answer = request.answer
 
-    question_record.feedback = json.dumps(
-        evaluation
-    )
+        # Safely extract score
+        score = evaluation.get("score", 0)
 
-    db.commit()
+        if isinstance(score, str):
+            # Extract digits if Gemini returns "8/10" or "Score: 8"
+            digits = "".join(
+                c for c in score if c.isdigit()
+            )
+
+            score = int(digits) if digits else 0
+
+        question_record.score = int(score)
+
+        question_record.feedback = json.dumps(
+            evaluation
+        )
+
+        db.commit()
+
+        print("Saved successfully")
+        print("Answer:", question_record.answer)
+        print("Score:", question_record.score)
+
+    except Exception as e:
+        db.rollback()
+        print("DB ERROR:", e)
+
+        return {
+            "message": "Failed to save answer",
+            "error": str(e)
+        }
 
     return {
         "message": "Answer evaluated",
-        "score": evaluation["score"],
         "evaluation": evaluation
     }
